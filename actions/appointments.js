@@ -444,13 +444,13 @@ export async function getAvailableTimeSlots(doctorId) {
  * Mark when a user joins the video call
  */
 export async function markUserJoinedCall(formData) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
-
   try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return { success: false, error: "Unauthorized. Please sign in." };
+    }
+
     const user = await db.user.findUnique({
       where: {
         clerkUserId: userId,
@@ -458,13 +458,13 @@ export async function markUserJoinedCall(formData) {
     });
 
     if (!user) {
-      throw new Error("User not found");
+      return { success: false, error: "User not found." };
     }
 
     const appointmentId = formData.get("appointmentId");
 
     if (!appointmentId) {
-      throw new Error("Appointment ID is required");
+      return { success: false, error: "Appointment ID is required." };
     }
 
     // Find the appointment
@@ -475,12 +475,12 @@ export async function markUserJoinedCall(formData) {
     });
 
     if (!appointment) {
-      throw new Error("Appointment not found");
+      return { success: false, error: "Appointment not found." };
     }
 
     // Verify the user is part of this appointment
     if (appointment.doctorId !== user.id && appointment.patientId !== user.id) {
-      throw new Error("You are not authorized for this appointment");
+      return { success: false, error: "You are not authorized for this appointment." };
     }
 
     // Update the appropriate field based on user role
@@ -503,7 +503,10 @@ export async function markUserJoinedCall(formData) {
     return { success: true };
   } catch (error) {
     console.error("Failed to mark user as joined:", error);
-    throw new Error("Failed to update join status: " + error.message);
+    return { 
+      success: false, 
+      error: error.message || "Failed to update join status." 
+    };
   }
 }
 
@@ -511,13 +514,13 @@ export async function markUserJoinedCall(formData) {
  * Mark appointment as completed or time over based on patient join status
  */
 export async function finalizeAppointmentStatus(formData) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
-
   try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return { success: false, error: "Unauthorized. Please sign in." };
+    }
+
     const user = await db.user.findUnique({
       where: {
         clerkUserId: userId,
@@ -525,14 +528,14 @@ export async function finalizeAppointmentStatus(formData) {
     });
 
     if (!user) {
-      throw new Error("User not found");
+      return { success: false, error: "User not found." };
     }
 
     const appointmentId = formData.get("appointmentId");
     const patientJoined = formData.get("patientJoined") === "true";
 
     if (!appointmentId) {
-      throw new Error("Appointment ID is required");
+      return { success: false, error: "Appointment ID is required." };
     }
 
     // Find the appointment
@@ -543,21 +546,19 @@ export async function finalizeAppointmentStatus(formData) {
     });
 
     if (!appointment) {
-      throw new Error("Appointment not found");
+      return { success: false, error: "Appointment not found." };
     }
 
     // Verify the user is the doctor for this appointment
     if (appointment.doctorId !== user.id) {
-      throw new Error("Only the doctor can finalize appointment status");
-    }
+      return { success: false, error: \"Only the doctor can finalize appointment status.\" };\n    }
 
     // Check if appointment is scheduled
-    if (appointment.status !== "SCHEDULED") {
-      throw new Error("Appointment is not in scheduled status");
-    }
+    if (appointment.status !== \"SCHEDULED\") {
+      return { success: false, error: \"Appointment is not in scheduled status.\" };\n    }
 
     // Determine the final status based on whether patient joined
-    const finalStatus = patientJoined ? "COMPLETED" : "TIME_OVER";
+    const finalStatus = patientJoined ? \"COMPLETED\" : \"TIME_OVER\";
 
     await db.appointment.update({
       where: {
@@ -568,19 +569,22 @@ export async function finalizeAppointmentStatus(formData) {
       },
     });
 
-    revalidatePath("/appointments");
-    revalidatePath("/doctor");
+    revalidatePath(\"/appointments\");
+    revalidatePath(\"/doctor\");
     
     return { 
       success: true, 
       status: finalStatus,
       message: patientJoined 
-        ? "Appointment marked as completed" 
-        : "Appointment marked as time over (patient didn't join)"
+        ? \"Appointment marked as completed\" 
+        : \"Appointment marked as time over (patient didn't join)\"
     };
   } catch (error) {
-    console.error("Failed to finalize appointment status:", error);
-    throw new Error("Failed to finalize appointment: " + error.message);
+    console.error(\"Failed to finalize appointment status:\", error);
+    return { 
+      success: false, 
+      error: error.message || \"Failed to finalize appointment.\" 
+    };
   }
 }
 

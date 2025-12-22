@@ -101,11 +101,18 @@ export default function VideoCall({ sessionId, token }) {
           try {
             const formData = new FormData();
             formData.append("appointmentId", appointmentId);
-            await markUserJoinedCall(formData);
-            setHasJoinedCall(true);
-            console.log("User marked as joined");
+            const result = await markUserJoinedCall(formData);
+            
+            if (result.success) {
+              setHasJoinedCall(true);
+              console.log("User marked as joined");
+            } else {
+              console.error("Failed to mark user as joined:", result.error);
+              toast.error(result.error || "Failed to mark join status");
+            }
           } catch (error) {
             console.error("Failed to mark user as joined:", error);
+            toast.error("Could not update join status");
           }
         }
 
@@ -191,9 +198,12 @@ export default function VideoCall({ sessionId, token }) {
           } else {
             toast.success("Meeting Complete - Appointment finished successfully");
           }
+        } else {
+          toast.error(result.error || "Failed to finalize appointment");
         }
       } catch (error) {
         console.error("Failed to finalize appointment status:", error);
+        toast.error("Could not update appointment status");
       }
     }
 
