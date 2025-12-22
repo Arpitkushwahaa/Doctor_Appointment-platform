@@ -1,7 +1,3 @@
 {
-  "buildCommand": "cd Doctor_Appointment-platform-main && npm run build",
-  "devCommand": "cd Doctor_Appointment-platform-main && npm run dev",
-  "installCommand": "cd Doctor_Appointment-platform-main && npm install",
-  "framework": "nextjs",
-  "outputDirectory": "Doctor_Appointment-platform-main/.next"
+  "version": 2
 }
