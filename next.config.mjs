@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsHmrCache: true, // Enable HMR cache for better performance
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   images: {
@@ -21,18 +20,8 @@ const nextConfig = {
   },
   // Enable React strict mode for better performance insights
   reactStrictMode: true,
-  // Optimize font loading
-  optimizeFonts: true,
-  // Reduce preload warnings
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.optimization = {
-        ...config.optimization,
-        moduleIds: 'deterministic',
-      };
-    }
-    return config;
-  },
+  // Turbopack configuration for Next.js 16+
+  turbopack: {},
 };
 
 export default nextConfig;
