@@ -551,14 +551,16 @@ export async function finalizeAppointmentStatus(formData) {
 
     // Verify the user is the doctor for this appointment
     if (appointment.doctorId !== user.id) {
-      return { success: false, error: \"Only the doctor can finalize appointment status.\" };\n    }
+      return { success: false, error: "Only the doctor can finalize appointment status." };
+    }
 
     // Check if appointment is scheduled
-    if (appointment.status !== \"SCHEDULED\") {
-      return { success: false, error: \"Appointment is not in scheduled status.\" };\n    }
+    if (appointment.status !== "SCHEDULED") {
+      return { success: false, error: "Appointment is not in scheduled status." };
+    }
 
     // Determine the final status based on whether patient joined
-    const finalStatus = patientJoined ? \"COMPLETED\" : \"TIME_OVER\";
+    const finalStatus = patientJoined ? "COMPLETED" : "TIME_OVER";
 
     await db.appointment.update({
       where: {
@@ -569,21 +571,21 @@ export async function finalizeAppointmentStatus(formData) {
       },
     });
 
-    revalidatePath(\"/appointments\");
-    revalidatePath(\"/doctor\");
+    revalidatePath("/appointments");
+    revalidatePath("/doctor");
     
     return { 
       success: true, 
       status: finalStatus,
       message: patientJoined 
-        ? \"Appointment marked as completed\" 
-        : \"Appointment marked as time over (patient didn't join)\"
+        ? "Appointment marked as completed" 
+        : "Appointment marked as time over (patient didn't join)"
     };
   } catch (error) {
-    console.error(\"Failed to finalize appointment status:\", error);
+    console.error("Failed to finalize appointment status:", error);
     return { 
       success: false, 
-      error: error.message || \"Failed to finalize appointment.\" 
+      error: error.message || "Failed to finalize appointment." 
     };
   }
 }
